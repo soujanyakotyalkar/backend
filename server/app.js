@@ -9,6 +9,7 @@ const {
   createSemester,
   getSemestersByStudentId,
   createSubject,
+  getSubjectById,
   getSubjectsBySemesterId,
   updateSubject,
   deleteSubject,
@@ -139,6 +140,20 @@ app.post("/api/subject", (req, res) => {
         .json({ message: "Subject created successfully", subjectId });
     }
   );
+});
+
+// API to get student by ID
+app.get("/api/subject-detail/:id", (req, res) => {
+  const { id } = req.params;
+  getSubjectById(id, (err, subject) => {
+    if (err) {
+      return res.status(500).json({ error: "Failed to fetch student" });
+    }
+    if (!subject) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+    res.status(200).json({ subject });
+  });
 });
 
 // API to get subjects by semester ID

@@ -107,6 +107,17 @@ const createSubject = (
   );
 };
 
+// READ Subject by ID
+const getSubjectById = (id, callback) => {
+  const sql = `SELECT * FROM subjects WHERE id = ?`;
+  db.get(sql, [id], (err, row) => {
+    if (err) {
+      return callback(err, null);
+    }
+    callback(null, row);
+  });
+};
+
 // READ Subjects by Semester ID
 const getSubjectsBySemesterId = (semesterId, callback) => {
   const sql = `SELECT * FROM subjects WHERE semesterId = ?`;
@@ -164,6 +175,7 @@ module.exports = {
   createSemester,
   getSemestersByStudentId,
   createSubject,
+  getSubjectById,
   getSubjectsBySemesterId,
   updateSubject,
   deleteSubject,
