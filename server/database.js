@@ -12,9 +12,11 @@ let db = new sqlite3.Database(dbName, (err) => {
     // Create students table
     db.run(
       `CREATE TABLE IF NOT EXISTS students (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            studentName TEXT,
-            USN TEXT
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        studentName TEXT,
+        USN TEXT,
+        branch TEXT,
+        image TEXT
         )`,
       (err) => {
         if (err) {

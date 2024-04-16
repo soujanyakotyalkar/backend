@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
+const path = require("path");
 const {
   createStudent,
   getStudentByUSN,
@@ -13,18 +15,37 @@ const {
   getSubjectsBySemesterId,
   updateSubject,
   deleteSubject,
+  getStudentByID,
 } = require("./crud");
 
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Define storage for uploaded images
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/images"); // Save uploaded images to public/images folder
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
+
+// Initialize multer upload instance
+const upload = multer({ storage });
+
 app.use(cors());
 app.use(express.json());
 
 // API to create a new student
-app.post("/api/student", (req, res) => {
-  const { studentName, USN } = req.body;
-  createStudent(studentName, USN, (err, studentId) => {
+app.post("/api/student", upload.single("profileImage"), (req, res) => {
+  const { studentName, USN, branch } = req.body;
+  const imagePath = req.file.path;
+  // console.log(studentName, USN, branch, imagePath);
+  createStudent(studentName, USN, branch, imagePath, (err, studentId) => {
     if (err) {
       return res.status(500).json({ error: "Failed to create student" });
     }
@@ -61,11 +82,26 @@ app.get("/api/student/:usn", (req, res) => {
   });
 });
 
-// API to update student by ID
-app.put("/api/student/:id", (req, res) => {
+// API to get student by ID
+app.get("/api/student-detail/:id", (req, res) => {
   const { id } = req.params;
-  const { studentName, USN, currentSem } = req.body;
-  updateStudent(id, studentName, USN, currentSem, (err) => {
+  getStudentByID(id, (err, student) => {
+    if (err) {
+      return res.status(500).json({ error: "Failed to fetch student" });
+    }
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+    res.status(200).json({ student });
+  });
+});
+// API to update student by ID
+app.put("/api/student/:id", upload.single("profileImage"), (req, res) => {
+  const { id } = req.params;
+  const { studentName, USN, branch } = req.body;
+  const imagePath = req.file ? req.file.path : null; // Check if a new image was uploaded
+
+  updateStudent(id, studentName, USN, branch, imagePath, (err) => {
     if (err) {
       return res.status(500).json({ error: "Failed to update student" });
     }
