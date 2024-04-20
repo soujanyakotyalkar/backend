@@ -19,6 +19,9 @@ const {
 } = require("./crud");
 
 const app = express();
+app.use(express.json());
+app.use(cors());
+app.use(express.static("public/images"));
 const port = process.env.PORT || 5000;
 
 // Define storage for uploaded images
@@ -35,7 +38,7 @@ const storage = multer.diskStorage({
 });
 
 // Initialize multer upload instance
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
 
 app.use(cors());
 app.use(express.json());
@@ -43,7 +46,9 @@ app.use(express.json());
 // API to create a new student
 app.post("/api/student", upload.single("profileImage"), (req, res) => {
   const { studentName, USN, branch } = req.body;
-  const imagePath = req.file.path;
+  const imagePath = req.file
+    ? `http://localhost:5000/${req.file.filename}`
+    : null;
   // console.log(studentName, USN, branch, imagePath);
   createStudent(studentName, USN, branch, imagePath, (err, studentId) => {
     if (err) {
@@ -99,7 +104,9 @@ app.get("/api/student-detail/:id", (req, res) => {
 app.put("/api/student/:id", upload.single("profileImage"), (req, res) => {
   const { id } = req.params;
   const { studentName, USN, branch } = req.body;
-  const imagePath = req.file ? req.file.path : null; // Check if a new image was uploaded
+  const imagePath = req.file
+    ? `http://localhost:5000/${req.file.filename}`
+    : null; // Check if a new image was uploaded
 
   updateStudent(id, studentName, USN, branch, imagePath, (err) => {
     if (err) {
